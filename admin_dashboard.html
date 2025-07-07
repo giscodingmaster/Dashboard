@@ -3,31 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأداء اليومي - Gas CRN Tracker</title>
+    <title>Daily Performance Dashboard - Gas CRN Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS for Excel export -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
     <style>
         :root {
             --primary-color: #00796B;
             --secondary-color: #FFC107;
+            --success-color: #28a745;
             --danger-color: #D32F2F;
-            --success-color: #388E3C;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
             --light-bg: #F4F6F8;
             --white-bg: #FFFFFF;
             --dark-text: #333333;
             --muted-text: #6c757d;
             --border-color: #e0e0e0;
             --font-family: 'Poppins', sans-serif;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
-            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -37,175 +31,91 @@
         }
 
         body {
-            background-color: var(--light-bg);
-            color: var(--dark-text);
             font-family: var(--font-family);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark-text);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: var(--white-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 500;
-            text-align: center;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #00695C;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: var(--dark-text);
-        }
-
-        .btn-secondary:hover {
-            background-color: #FFB300;
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
+            background: linear-gradient(135deg, #00796B 0%, #004d40 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
         }
 
         .header-content {
-            text-align: center;
-            flex-grow: 1;
+            position: relative;
+            z-index: 1;
         }
 
         .header h1 {
-            font-size: 36px;
-            font-weight: 600;
-            color: var(--dark-text);
+            font-size: 2.5em;
+            font-weight: 700;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .header-content p {
-            font-size: 18px;
-            color: var(--muted-text);
+        .header-subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 20px;
         }
 
-        .logout-btn {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            color: var(--muted-text);
-            border-radius: 8px;
-            height: 40px;
-            padding: 0 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logout-btn:hover {
-            background: var(--danger-color);
-            color: white;
-            border-color: var(--danger-color);
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--light-bg);
+        .date-time {
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 2000;
+            gap: 20px;
+            font-size: 1.1em;
+            flex-wrap: wrap;
         }
 
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .date-time i {
+            color: var(--secondary-color);
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, var(--white-bg) 0%, #f8f9fa 100%);
+            background: white;
+            border-radius: 15px;
             padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
         .stat-card::before {
@@ -218,9 +128,11 @@
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .stat-icon {
@@ -231,361 +143,385 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, var(--primary-color), #00695C);
             color: white;
         }
 
         .stat-value {
-            font-size: 32px;
+            font-size: 2.5em;
             font-weight: 700;
             color: var(--dark-text);
             margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 1.1em;
             color: var(--muted-text);
             font-weight: 500;
         }
-
-        .controls-section {
-            background: var(--white-bg);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-top: 4px solid var(--primary-color);
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
-        .controls-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .controls-title {
-            font-size: 20px;
+        .chart-title {
+            font-size: 1.5em;
             font-weight: 600;
+            margin-bottom: 20px;
             color: var(--dark-text);
-            flex-grow: 1;
-        }
-
-        .controls-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .control-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--dark-text);
-            margin-bottom: 8px;
-        }
-
-        .control-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            font-size: 16px;
-            background-color: var(--light-bg);
-            transition: border-color 0.2s ease;
-        }
-
-        .control-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.1);
+            text-align: center;
         }
 
         .governorate-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
 
         .governorate-card {
-            background: var(--white-bg);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
 
         .governorate-card:hover {
             transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
         }
 
         .governorate-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 2px solid var(--light-bg);
         }
 
         .governorate-name {
-            font-size: 18px;
+            font-size: 1.3em;
             font-weight: 600;
             color: var(--primary-color);
         }
 
-        .governorate-total {
-            font-size: 14px;
-            color: var(--muted-text);
-            background: var(--light-bg);
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .governorate-metrics {
+        .governorate-stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 15px;
         }
 
-        .metric-item {
+        .mini-stat {
             text-align: center;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 15px;
             background: var(--light-bg);
+            border-radius: 10px;
         }
 
-        .metric-value {
-            font-size: 20px;
+        .mini-stat-value {
+            font-size: 1.8em;
             font-weight: 600;
             color: var(--dark-text);
         }
 
-        .metric-label {
-            font-size: 12px;
+        .mini-stat-label {
+            font-size: 0.9em;
             color: var(--muted-text);
-            margin-top: 2px;
+            margin-top: 5px;
         }
 
-        .chart-container {
-            background: var(--white-bg);
-            border-radius: 12px;
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 15px;
             padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
-        .chart-header {
+        .filter-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            flex-direction: column;
         }
 
-        .chart-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-
-        .chart-canvas {
-            max-height: 400px;
-        }
-
-        .access-denied {
-            text-align: center;
-            padding: 60px 20px;
+        .filter-label {
+            font-size: 0.9em;
             color: var(--muted-text);
+            margin-bottom: 5px;
+            font-weight: 500;
         }
 
-        .access-denied i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            color: var(--danger-color);
+        .filter-select {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            background-color: #fff;
         }
 
-        .access-denied h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004d40;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--muted-text);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--dark-text);
+            transform: translateY(-2px);
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 1.2em;
             color: var(--dark-text);
         }
 
-        .hidden {
-            display: none !important;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-bg);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: var(--muted-text);
+            background: var(--white-bg);
+            border-radius: 15px;
+        }
+
+        .no-data i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(360deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
+            .dashboard-container {
+                padding: 15px;
             }
-            
+            .stats-grid, .governorate-grid, .filter-controls {
+                grid-template-columns: 1fr;
+            }
             .header h1 {
-                font-size: 24px;
+                font-size: 2em;
             }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-            
-            .governorate-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .controls-grid {
-                grid-template-columns: 1fr;
+            .date-time {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loader"></div>
+    <div class="loading-spinner" id="loading-spinner">
+        <div class="spinner"></div>
+        <p>جاري تحميل بيانات لوحة التحكم...</p>
     </div>
-    
-    <div class="container hidden" id="main-container">
-        <!-- Header -->
+
+    <div class="dashboard-container" id="dashboard-container" style="display: none;">
         <div class="header">
-            <div>
-                <button class="logout-btn" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-                </button>
-            </div>
             <div class="header-content">
-                <h1><i class="fas fa-chart-line"></i> لوحة تحكم الأداء اليومي</h1>
-                <p>تقارير الأداء اليومي لجميع المحافظات</p>
-            </div>
-            <div style="width: 110px;"></div>
-        </div>
-
-        <!-- Access Denied Message -->
-        <div id="access-denied" class="card access-denied hidden">
-            <i class="fas fa-ban"></i>
-            <h2>غير مصرح لك بالوصول</h2>
-            <p>هذه الصفحة مخصصة للمديرين فقط. يرجى التواصل مع المدير للحصول على الصلاحيات المناسبة.</p>
-        </div>
-
-        <!-- Dashboard Content -->
-        <div id="dashboard-content" class="hidden">
-            <!-- Summary Statistics -->
-            <div class="stats-grid" id="summary-stats">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <div class="stat-value" id="total-buildings">0</div>
-                    <div class="stat-label">إجمالي المباني</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success-color), #2E7D32);">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-value" id="completed-today">0</div>
-                    <div class="stat-label">مكتمل اليوم</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #1976D2, #1565C0);">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="stat-value" id="field-confirmed-today">0</div>
-                    <div class="stat-label">تأكيد الموقع اليوم</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--secondary-color), #FF8F00);">
-                        <i class="fas fa-route"></i>
-                    </div>
-                    <div class="stat-value" id="sent-to-field-today">0</div>
-                    <div class="stat-label">إرسال للموقع اليوم</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--danger-color), #C62828);">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="stat-value" id="issues-reported-today">0</div>
-                    <div class="stat-label">مشاكل مبلغة اليوم</div>
+                <h1><i class="fas fa-chart-line"></i> لوحة الأداء اليومية</h1>
+                <p class="header-subtitle">مراقبة الأداء اليومي لجميع المحافظات - Gas CRN Tracker</p>
+                <div class="date-time">
+                    <span><i class="fas fa-calendar-alt"></i> <span id="current-date"></span></span>
+                    <span><i class="fas fa-clock"></i> <span id="current-time"></span></span>
+                    <span><i class="fas fa-sync-alt"></i> آخر تحديث: <span id="last-update"></span></span>
                 </div>
             </div>
+        </div>
 
-            <!-- Controls Section -->
-            <div class="controls-section">
-                <div class="controls-header">
-                    <div class="controls-title">
-                        <i class="fas fa-sliders-h"></i> إعدادات التقرير
+        <div id="dashboard-content">
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-filter"></i> تصفية البيانات</h3>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="governorate-filter" class="filter-label">المحافظة</label>
+                        <select id="governorate-filter" class="filter-select">
+                            <option value="all">جميع المحافظات</option>
+                        </select>
                     </div>
-                    <div class="controls-actions">
-                        <button class="btn btn-primary btn-sm" id="refresh-btn">
-                            <i class="fas fa-sync-alt"></i> تحديث البيانات
+                    <div class="filter-group">
+                        <label for="city-filter" class="filter-label">المدينة</label>
+                        <select id="city-filter" class="filter-select" disabled>
+                            <option value="all">جميع المدن</option>
+                        </select>
+                    </div>
+                     <div class="filter-group">
+                        <button id="apply-filters-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> تطبيق التصفية
                         </button>
-                        <button class="btn btn-secondary btn-sm" id="export-btn">
-                            <i class="fas fa-file-excel"></i> تصدير Excel
+                    </div>
+                     <div class="filter-group">
+                        <button id="reset-filters-btn" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> إعادة تعيين
                         </button>
                     </div>
                 </div>
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <label class="control-label">التاريخ المحدد</label>
-                        <input type="date" id="selected-date" class="control-input">
+            </div>
+            
+            <!-- Overall Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: var(--success-color);"><i class="fas fa-check-double"></i></div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label">المحافظة</label>
-                        <select id="governorate-filter" class="control-input">
-                            <option value="">جميع المحافظات</option>
-                        </select>
+                    <div class="stat-value" id="total-completed">0</div>
+                    <div class="stat-label">مهام مكتملة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: var(--info-color);"><i class="fas fa-hard-hat"></i></div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label">نوع التقرير</label>
-                        <select id="report-type" class="control-input">
-                            <option value="daily">تقرير يومي</option>
-                            <option value="weekly">تقرير أسبوعي</option>
-                            <option value="monthly">تقرير شهري</option>
-                        </select>
+                    <div class="stat-value" id="total-field">0</div>
+                    <div class="stat-label">قيد التنفيذ في الموقع</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: var(--warning-color);"><i class="fas fa-building"></i></div>
                     </div>
+                    <div class="stat-value" id="total-office">0</div>
+                    <div class="stat-label">قيد التنفيذ في المكتب</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: var(--danger-color);"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
+                    <div class="stat-value" id="total-issues">0</div>
+                    <div class="stat-label">تم الإبلاغ عن مشاكل</div>
                 </div>
             </div>
 
             <!-- Charts Section -->
             <div class="chart-container">
-                <div class="chart-header">
-                    <div class="chart-title">
-                        <i class="fas fa-chart-bar"></i> الأداء حسب المحافظة
-                    </div>
-                </div>
-                <canvas id="performance-chart" class="chart-canvas"></canvas>
+                <h3 class="chart-title">توزيع المهام حسب الحالة</h3>
+                <canvas id="statusChart" width="400" height="180"></canvas>
             </div>
 
-            <!-- Governorate Breakdown -->
-            <div class="card">
-                <h3 style="margin-bottom: 20px; font-weight: 600;">
-                    <i class="fas fa-map-marked-alt"></i> تفصيل الأداء حسب المحافظة
-                </h3>
-                <div class="governorate-grid" id="governorate-breakdown">
-                    <!-- Governorate cards will be populated here -->
+            <!-- Governorate Performance -->
+            <h2 style="color: white; text-align:center; margin: 40px 0 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">أداء المحافظات</h2>
+            <div class="governorate-grid" id="governorate-grid">
+                 <div id="no-data-card" class="no-data" style="display: none; grid-column: 1 / -1;">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>لا توجد بيانات للعرض</h3>
+                    <p>لم يتم العثور على بيانات تطابق معايير التصفية الحالية.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <button id="refresh-btn" class="refresh-btn" title="تحديث البيانات">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
         
-        // Firebase configuration (use the same as your existing app)
-        const firebaseConfig = {
+        // This event listener ensures the entire HTML document is loaded before running any script.
+        // This is the FIX for the "Cannot read properties of null" error.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const firebaseConfig = {
             apiKey: "AIzaSyAWZZOTIsRNi7rrgw5rkOVkkxhx_72FV-4",
             authDomain: "sapasbuilt.firebaseapp.com",
             databaseURL: "https://sapasbuilt-default-rtdb.firebaseio.com",
@@ -596,371 +532,228 @@
             measurementId: "G-YZ2LY4MFW1"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
-        
-        // Global variables
-        let buildingsData = [];
-        let currentUser = null;
-        let performanceChart = null;
-        
-        // Initialize the application
-        onAuthStateChanged(auth, async (user) => {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const mainContainer = document.getElementById('main-container');
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const database = getDatabase(app);
+
+            let fullBuildingsData = [];
+            let cityDataByGov = {};
+            let statusChart;
+
+            // --- Element Caching ---
+            // Cache DOM elements to avoid repeated lookups
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const dashboardContainer = document.getElementById('dashboard-container');
+            const currentDateEl = document.getElementById('current-date');
+            const currentTimeEl = document.getElementById('current-time');
+            const lastUpdateEl = document.getElementById('last-update');
+            const govSelect = document.getElementById('governorate-filter');
+            const citySelect = document.getElementById('city-filter');
             
-            if (user) {
-                currentUser = user;
-                try {
-                    // Check user role
-                    const userSnapshot = await get(ref(database, 'users/' + user.uid));
-                    const userRole = userSnapshot.exists() ? userSnapshot.val() : 'user';
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const userRef = ref(database, 'users/' + user.uid);
+                    get(userRef).then((snapshot) => {
+                        const userRole = snapshot.exists() ? snapshot.val() : 'user';
+                        if (userRole === 'admin') {
+                            initDashboard();
+                        } else {
+                            alert('Access Denied. You do not have admin privileges.');
+                            window.location.href = 'index.html'; // Adjust this path if needed
+                        }
+                    }).catch((error) => {
+                        console.error("Error verifying user role:", error);
+                        alert('An error occurred while verifying your role.');
+                        window.location.href = 'login.html'; // Adjust this path if needed
+                    });
+                } else {
+                    window.location.href = 'login.html'; // Adjust this path if needed
+                }
+            });
+
+            function initDashboard() {
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+                
+                // Set up event listeners for buttons
+                document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
+                document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
+                document.getElementById('refresh-btn').addEventListener('click', refreshDashboard);
+
+                onValue(ref(database, '/buildings'), (snapshot) => {
+                    const data = snapshot.val();
+                    fullBuildingsData = data ? Object.keys(data).map(key => ({ ...data[key], db_key: key })) : [];
                     
-                    if (userRole === 'admin') {
-                        // Load dashboard for admin
-                        await loadDashboard();
-                        showDashboard();
-                    } else {
-                        // Show access denied for non-admin users
-                        showAccessDenied();
-                    }
-                } catch (error) {
-                    console.error('Error checking user role:', error);
-                    showAccessDenied();
-                }
-            } else {
-                // Redirect to login page or show login form
-                window.location.href = 'login.html'; // Adjust path as needed
-            }
-            
-            loadingOverlay.style.display = 'none';
-            mainContainer.classList.remove('hidden');
-        });
+                    processCityData();
+                    populateFilters();
+                    renderDashboard(fullBuildingsData);
 
-        // Show dashboard content
-        function showDashboard() {
-            document.getElementById('access-denied').classList.add('hidden');
-            document.getElementById('dashboard-content').classList.remove('hidden');
-        }
-
-        // Show access denied message
-        function showAccessDenied() {
-            document.getElementById('dashboard-content').classList.add('hidden');
-            document.getElementById('access-denied').classList.remove('hidden');
-        }
-
-        // Load dashboard data
-        async function loadDashboard() {
-            try {
-                // Load buildings data
-                const buildingsSnapshot = await get(ref(database, 'buildings'));
-                buildingsData = buildingsSnapshot.exists() 
-                    ? Object.keys(buildingsSnapshot.val()).map(key => ({
-                        ...buildingsSnapshot.val()[key],
-                        db_key: key
-                    }))
-                    : [];
-
-                // Set default date to today
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('selected-date').value = today;
-
-                // Populate governorate filter
-                populateGovernorateFilter();
-
-                // Calculate and display metrics
-                calculateDailyMetrics(today);
-                
-                // Setup event listeners
-                setupEventListeners();
-
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-            }
-        }
-
-        // Populate governorate filter
-        function populateGovernorateFilter() {
-            const governorateFilter = document.getElementById('governorate-filter');
-            const governorates = [...new Set(buildingsData.map(b => b.governorate))].filter(Boolean).sort();
-            
-            governorateFilter.innerHTML = '<option value="">جميع المحافظات</option>';
-            governorates.forEach(gov => {
-                const option = document.createElement('option');
-                option.value = gov;
-                option.textContent = gov;
-                governorateFilter.appendChild(option);
-            });
-        }
-
-        // Calculate daily metrics
-        function calculateDailyMetrics(selectedDate) {
-            const targetDate = new Date(selectedDate);
-            const dateString = targetDate.toDateString();
-
-            // Filter buildings for selected governorate
-            const governorateFilter = document.getElementById('governorate-filter').value;
-            let filteredBuildings = buildingsData;
-            if (governorateFilter) {
-                filteredBuildings = buildingsData.filter(b => b.governorate === governorateFilter);
+                    loadingSpinner.style.display = 'none';
+                    dashboardContainer.style.display = 'block';
+                    updateLastUpdateTime();
+                });
             }
 
-            // Calculate overall metrics
-            const totalBuildings = filteredBuildings.length;
-            const completedToday = getTasksForDate(filteredBuildings, dateString, 'map_timestamp');
-            const fieldConfirmedToday = getTasksForDate(filteredBuildings, dateString, 'site_timestamp');
-            const issuesReportedToday = getTasksForDate(filteredBuildings, dateString, 'site_issue_timestamp');
+            function updateDateTime() {
+                const now = new Date();
+                currentDateEl.textContent = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                currentTimeEl.textContent = now.toLocaleTimeString('ar-EG');
+            }
+
+            function updateLastUpdateTime() {
+                lastUpdateEl.textContent = new Date().toLocaleTimeString('ar-EG');
+            }
             
-            // Calculate sent to field today (buildings that got needs_field_visit = true today)
-            // Since we don't have a timestamp for when needs_field_visit was set, we'll use site_timestamp as proxy
-            const sentToFieldToday = fieldConfirmedToday; // Approximation
+            function renderDashboard(data) {
+                updateOverallStats(data);
+                updateCharts(data);
+                updateGovernorateCards(data);
+            }
 
-            // Update summary cards
-            document.getElementById('total-buildings').textContent = totalBuildings;
-            document.getElementById('completed-today').textContent = completedToday.length;
-            document.getElementById('field-confirmed-today').textContent = fieldConfirmedToday.length;
-            document.getElementById('sent-to-field-today').textContent = sentToFieldToday.length;
-            document.getElementById('issues-reported-today').textContent = issuesReportedToday.length;
-
-            // Calculate governorate breakdown
-            calculateGovernorateBreakdown(selectedDate);
-            
-            // Update chart
-            updatePerformanceChart(selectedDate);
-        }
-
-        // Get tasks for specific date
-        function getTasksForDate(buildings, targetDateString, timestampField) {
-            return buildings.filter(building => {
-                if (!building[timestampField]) return false;
-                const taskDate = new Date(building[timestampField]).toDateString();
-                return taskDate === targetDateString;
-            });
-        }
-
-        // Calculate governorate breakdown
-        function calculateGovernorateBreakdown(selectedDate) {
-            const targetDate = new Date(selectedDate);
-            const dateString = targetDate.toDateString();
-            
-            // Group buildings by governorate
-            const governorateData = {};
-            const governorates = [...new Set(buildingsData.map(b => b.governorate))].filter(Boolean);
-
-            governorates.forEach(gov => {
-                const govBuildings = buildingsData.filter(b => b.governorate === gov);
-                
-                governorateData[gov] = {
-                    total_buildings: govBuildings.length,
-                    completed_today: getTasksForDate(govBuildings, dateString, 'map_timestamp').length,
-                    field_confirmed_today: getTasksForDate(govBuildings, dateString, 'site_timestamp').length,
-                    issues_reported_today: getTasksForDate(govBuildings, dateString, 'site_issue_timestamp').length,
-                    pending_office: govBuildings.filter(b => !b.map_confirmed && !b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length,
-                    pending_field: govBuildings.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length
+            function calculateStats(data) {
+                return {
+                    completed: data.filter(b => b.map_confirmed).length,
+                    field: data.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length,
+                    office: data.filter(b => !b.map_confirmed && (!b.needs_field_visit || b.site_confirmed) && !b.site_issue_reported).length,
+                    issues: data.filter(b => b.site_issue_reported).length,
+                    total: data.length
                 };
-            });
-
-            // Render governorate cards
-            renderGovernorateCards(governorateData);
-        }
-
-        // Render governorate cards
-        function renderGovernorateCards(governorateData) {
-            const container = document.getElementById('governorate-breakdown');
-            container.innerHTML = '';
-
-            Object.entries(governorateData).forEach(([govName, data]) => {
-                const card = document.createElement('div');
-                card.className = 'governorate-card';
-                card.innerHTML = `
-                    <div class="governorate-header">
-                        <div class="governorate-name">${govName}</div>
-                        <div class="governorate-total">المجموع: ${data.total_buildings}</div>
-                    </div>
-                    <div class="governorate-metrics">
-                        <div class="metric-item">
-                            <div class="metric-value">${data.completed_today}</div>
-                            <div class="metric-label">مكتمل اليوم</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value">${data.field_confirmed_today}</div>
-                            <div class="metric-label">تأكيد الموقع</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value">${data.pending_office}</div>
-                            <div class="metric-label">بانتظار المكتب</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value">${data.pending_field}</div>
-                            <div class="metric-label">بانتظار الموقع</div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Update performance chart
-        function updatePerformanceChart(selectedDate) {
-            const targetDate = new Date(selectedDate);
-            const dateString = targetDate.toDateString();
+            }
             
-            // Get governorate data for chart
-            const governorates = [...new Set(buildingsData.map(b => b.governorate))].filter(Boolean);
-            const chartData = {
-                labels: governorates,
-                datasets: [
-                    {
-                        label: 'مكتمل اليوم',
-                        data: governorates.map(gov => {
-                            const govBuildings = buildingsData.filter(b => b.governorate === gov);
-                            return getTasksForDate(govBuildings, dateString, 'map_timestamp').length;
-                        }),
-                        backgroundColor: 'rgba(56, 142, 60, 0.8)',
-                        borderColor: 'rgba(56, 142, 60, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'تأكيد الموقع اليوم',
-                        data: governorates.map(gov => {
-                            const govBuildings = buildingsData.filter(b => b.governorate === gov);
-                            return getTasksForDate(govBuildings, dateString, 'site_timestamp').length;
-                        }),
-                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
-                        borderColor: 'rgba(25, 118, 210, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'مشاكل مبلغة اليوم',
-                        data: governorates.map(gov => {
-                            const govBuildings = buildingsData.filter(b => b.governorate === gov);
-                            return getTasksForDate(govBuildings, dateString, 'site_issue_timestamp').length;
-                        }),
-                        backgroundColor: 'rgba(211, 47, 47, 0.8)',
-                        borderColor: 'rgba(211, 47, 47, 1)',
-                        borderWidth: 2
-                    }
-                ]
-            };
-
-            const ctx = document.getElementById('performance-chart').getContext('2d');
-            
-            if (performanceChart) {
-                performanceChart.destroy();
+            function updateOverallStats(data) {
+                const stats = calculateStats(data);
+                document.getElementById('total-completed').textContent = stats.completed.toLocaleString('ar-EG');
+                document.getElementById('total-field').textContent = stats.field.toLocaleString('ar-EG');
+                document.getElementById('total-office').textContent = stats.office.toLocaleString('ar-EG');
+                document.getElementById('total-issues').textContent = stats.issues.toLocaleString('ar-EG');
             }
 
-            performanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: `الأداء اليومي - ${selectedDate}`
-                        }
+            function updateCharts(data) {
+                const stats = calculateStats(data);
+                
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                if (statusChart) statusChart.destroy();
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['مهام مكتملة', 'قيد التنفيذ بالموقع', 'قيد التنفيذ بالمكتب', 'مشاكل مبلغ عنها'],
+                        datasets: [{
+                            label: 'توزيع المهام',
+                            data: [stats.completed, stats.field, stats.office, stats.issues],
+                            backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#D32F2F'],
+                            borderColor: '#FFFFFF', borderWidth: 3
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Poppins', size: 14 }}}}
+                    }
+                });
+            }
+            
+            function updateGovernorateCards(data) {
+                const governorates = [...new Set(data.map(b => b.governorate))].filter(Boolean);
+                const gridContainer = document.getElementById('governorate-grid');
+                const noDataCard = document.getElementById('no-data-card');
+                
+                gridContainer.innerHTML = ''; // Clear all previous cards
+                gridContainer.appendChild(noDataCard); // Add the template back
+
+                if (governorates.length === 0 || data.length === 0) {
+                    noDataCard.style.display = 'block';
+                    return;
+                }
+                noDataCard.style.display = 'none';
+
+                governorates.forEach(gov => {
+                    const govData = data.filter(b => b.governorate === gov);
+                    if (govData.length === 0) return; // Don't show a card if the governorate has no data after filtering
+
+                    const stats = calculateStats(govData);
+                    const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+                    
+                    const cardHTML = `
+                        <div class="governorate-card">
+                            <div class="governorate-header">
+                                <div class="governorate-name">${gov}</div>
+                                <div style="font-size: 0.9em; color: var(--muted-text);">${stats.total.toLocaleString('ar-EG')} مبنى</div>
+                            </div>
+                            <div class="governorate-stats">
+                                <div class="mini-stat"><div class="mini-stat-value" style="color: var(--success-color);">${stats.completed.toLocaleString('ar-EG')}</div><div class="mini-stat-label">مكتمل</div></div>
+                                <div class="mini-stat"><div class="mini-stat-value" style="color: var(--info-color);">${stats.field.toLocaleString('ar-EG')}</div><div class="mini-stat-label">موقع</div></div>
+                                <div class="mini-stat"><div class="mini-stat-value" style="color: var(--warning-color);">${stats.office.toLocaleString('ar-EG')}</div><div class="mini-stat-label">مكتب</div></div>
+                                <div class="mini-stat"><div class="mini-stat-value" style="color: var(--danger-color);">${stats.issues.toLocaleString('ar-EG')}</div><div class="mini-stat-label">مشاكل</div></div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${completionRate}%;"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 10px; font-size: 0.9em; color: var(--muted-text);">معدل الإنجاز: ${completionRate}%</div>
+                        </div>`;
+                    gridContainer.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            }
+
+            // --- Filtering Logic ---
+            function processCityData() {
+                cityDataByGov = {};
+                fullBuildingsData.forEach(b => {
+                    if(b.governorate && b.city){
+                        if(!cityDataByGov[b.governorate]) cityDataByGov[b.governorate] = new Set();
+                        cityDataByGov[b.governorate].add(b.city);
+                    }
+                });
+            }
+
+            function populateFilters() {
+                govSelect.innerHTML = '<option value="all">جميع المحافظات</option>';
+                Object.keys(cityDataByGov).sort().forEach(gov => {
+                    govSelect.innerHTML += `<option value="${gov}">${gov}</option>`;
+                });
+
+                govSelect.addEventListener('change', () => {
+                    const selectedGov = govSelect.value;
+                    citySelect.innerHTML = '<option value="all">جميع المدن</option>';
+                    if(selectedGov !== 'all' && cityDataByGov[selectedGov]){
+                        [...cityDataByGov[selectedGov]].sort().forEach(city => {
+                            citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+                        });
+                        citySelect.disabled = false;
+                    } else {
+                        citySelect.disabled = true;
+                    }
+                });
+            }
+            
+            function applyFilters() {
+                let filteredData = fullBuildingsData;
+                
+                if (govSelect.value !== 'all') {
+                    filteredData = filteredData.filter(b => b.governorate === govSelect.value);
+                    if (citySelect.value !== 'all' && !citySelect.disabled) {
+                        filteredData = filteredData.filter(b => b.city === citySelect.value);
                     }
                 }
-            });
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Logout button
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                signOut(auth);
-            });
-
-            // Date change
-            document.getElementById('selected-date').addEventListener('change', (e) => {
-                calculateDailyMetrics(e.target.value);
-            });
-
-            // Governorate filter change
-            document.getElementById('governorate-filter').addEventListener('change', () => {
-                const selectedDate = document.getElementById('selected-date').value;
-                calculateDailyMetrics(selectedDate);
-            });
-
-            // Refresh button
-            document.getElementById('refresh-btn').addEventListener('click', async () => {
-                document.getElementById('loading-overlay').style.display = 'flex';
-                await loadDashboard();
-                document.getElementById('loading-overlay').style.display = 'none';
-            });
-
-            // Export button
-            document.getElementById('export-btn').addEventListener('click', exportToExcel);
-        }
-
-        // Export to Excel
-        function exportToExcel() {
-            const selectedDate = document.getElementById('selected-date').value;
-            const governorateFilter = document.getElementById('governorate-filter').value;
-            
-            // Prepare data for export
-            let exportData = buildingsData;
-            if (governorateFilter) {
-                exportData = buildingsData.filter(b => b.governorate === governorateFilter);
+                
+                renderDashboard(filteredData);
             }
 
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            
-            // Summary sheet
-            const summaryData = [
-                ['تقرير الأداء اليومي', selectedDate],
-                ['المحافظة المحددة', governorateFilter || 'جميع المحافظات'],
-                [''],
-                ['المؤشر', 'القيمة'],
-                ['إجمالي المباني', exportData.length],
-                ['مكتمل اليوم', document.getElementById('completed-today').textContent],
-                ['تأكيد الموقع اليوم', document.getElementById('field-confirmed-today').textContent],
-                ['إرسال للموقع اليوم', document.getElementById('sent-to-field-today').textContent],
-                ['مشاكل مبلغة اليوم', document.getElementById('issues-reported-today').textContent]
-            ];
-            
-            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-            XLSX.utils.book_append_sheet(wb, summaryWs, 'ملخص');
+            function resetFilters() {
+                govSelect.value = 'all';
+                citySelect.innerHTML = '<option value="all">جميع المدن</option>';
+                citySelect.disabled = true;
+                
+                renderDashboard(fullBuildingsData);
+            }
 
-            // Detailed data sheet
-            const detailedData = exportData.map(building => ({
-                'CRN': building.crn,
-                'المحافظة': building.governorate,
-                'المدينة': building.city,
-                'القطاع': building.sector,
-                'البلوك': building.block,
-                'مكتمل على الخريطة': building.map_confirmed ? 'نعم' : 'لا',
-                'تاريخ الإكمال': building.map_timestamp || '',
-                'تأكيد الموقع': building.site_confirmed ? 'نعم' : 'لا',
-                'تاريخ تأكيد الموقع': building.site_timestamp || '',
-                'يحتاج زيارة ميدانية': building.needs_field_visit ? 'نعم' : 'لا',
-                'مشكلة مبلغة': building.site_issue_reported ? 'نعم' : 'لا',
-                'تفاصيل المشكلة': building.site_issue_details || '',
-                'تاريخ الإبلاغ عن المشكلة': building.site_issue_timestamp || ''
-            }));
-            
-            const detailedWs = XLSX.utils.json_to_sheet(detailedData);
-            XLSX.utils.book_append_sheet(wb, detailedWs, 'البيانات التفصيلية');
-
-            // Save file
-            const fileName = `تقرير_الأداء_اليومي_${selectedDate}_${governorateFilter || 'جميع_المحافظات'}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-        }
+            function refreshDashboard() {
+                const btnIcon = document.querySelector('#refresh-btn i');
+                if (btnIcon) {
+                    btnIcon.classList.add('fa-spin');
+                    resetFilters(); // Resetting filters is a good default for a full refresh
+                    setTimeout(() => btnIcon.classList.remove('fa-spin'), 1000);
+                }
+            }
+        });
     </script>
 </body>
 </html>
-

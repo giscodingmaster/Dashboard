@@ -517,8 +517,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
         
-        // This event listener ensures the entire HTML document is loaded before running any script.
-        // This is the FIX for the "Cannot read properties of null" error.
         document.addEventListener('DOMContentLoaded', () => {
 
             const firebaseConfig = {
@@ -540,8 +538,6 @@
             let cityDataByGov = {};
             let statusChart;
 
-            // --- Element Caching ---
-            // Cache DOM elements to avoid repeated lookups
             const loadingSpinner = document.getElementById('loading-spinner');
             const dashboardContainer = document.getElementById('dashboard-container');
             const currentDateEl = document.getElementById('current-date');
@@ -559,15 +555,17 @@
                             initDashboard();
                         } else {
                             alert('Access Denied. You do not have admin privileges.');
-                            window.location.href = 'index.html'; // Adjust this path if needed
+                            // ** PATH CORRECTION FOR GITHUB PAGES **
+                            // This path assumes login.html is in the root, one level above /Dashboard/
+                            window.location.href = '../login.html';
                         }
                     }).catch((error) => {
                         console.error("Error verifying user role:", error);
                         alert('An error occurred while verifying your role.');
-                        window.location.href = 'login.html'; // Adjust this path if needed
+                        window.location.href = '../login.html';
                     });
                 } else {
-                    window.location.href = 'login.html'; // Adjust this path if needed
+                    window.location.href = '../login.html';
                 }
             });
 
@@ -575,7 +573,6 @@
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
                 
-                // Set up event listeners for buttons
                 document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
                 document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
                 document.getElementById('refresh-btn').addEventListener('click', refreshDashboard);
@@ -656,8 +653,8 @@
                 const gridContainer = document.getElementById('governorate-grid');
                 const noDataCard = document.getElementById('no-data-card');
                 
-                gridContainer.innerHTML = ''; // Clear all previous cards
-                gridContainer.appendChild(noDataCard); // Add the template back
+                gridContainer.innerHTML = ''; 
+                gridContainer.appendChild(noDataCard);
 
                 if (governorates.length === 0 || data.length === 0) {
                     noDataCard.style.display = 'block';
@@ -667,7 +664,7 @@
 
                 governorates.forEach(gov => {
                     const govData = data.filter(b => b.governorate === gov);
-                    if (govData.length === 0) return; // Don't show a card if the governorate has no data after filtering
+                    if (govData.length === 0) return;
 
                     const stats = calculateStats(govData);
                     const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
@@ -693,7 +690,6 @@
                 });
             }
 
-            // --- Filtering Logic ---
             function processCityData() {
                 cityDataByGov = {};
                 fullBuildingsData.forEach(b => {
@@ -749,7 +745,7 @@
                 const btnIcon = document.querySelector('#refresh-btn i');
                 if (btnIcon) {
                     btnIcon.classList.add('fa-spin');
-                    resetFilters(); // Resetting filters is a good default for a full refresh
+                    resetFilters();
                     setTimeout(() => btnIcon.classList.remove('fa-spin'), 1000);
                 }
             }

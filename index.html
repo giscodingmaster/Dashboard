@@ -518,6 +518,7 @@
         import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
         
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DEBUG: DOM is ready. Starting script.");
 
             const firebaseConfig = {
             apiKey: "AIzaSyAWZZOTIsRNi7rrgw5rkOVkkxhx_72FV-4",
@@ -546,25 +547,39 @@
             const govSelect = document.getElementById('governorate-filter');
             const citySelect = document.getElementById('city-filter');
             
+            console.log("DEBUG: Firebase initialized. Setting up auth listener.");
+
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    console.log("DEBUG: Auth state changed. User is LOGGED IN. UID:", user.uid);
                     const userRef = ref(database, 'users/' + user.uid);
+                    
                     get(userRef).then((snapshot) => {
-                        const userRole = snapshot.exists() ? snapshot.val() : 'user';
-                        if (userRole === 'admin') {
-                            initDashboard();
+                        console.log("DEBUG: Successfully attempted to fetch user data from database.");
+                        if (snapshot.exists()) {
+                            const userRole = snapshot.val();
+                            console.log("DEBUG: User role from DB is:", userRole, "(Type: " + typeof userRole + ")");
+                            
+                            if (userRole === 'admin') {
+                                console.log("DEBUG: SUCCESS! User is admin. Initializing dashboard.");
+                                initDashboard();
+                            } else {
+                                console.log("DEBUG: FAILURE. User is not an admin. Role was:", userRole);
+                                alert('Access Denied. You do not have admin privileges.');
+                                window.location.href = '../login.html';
+                            }
                         } else {
-                            alert('Access Denied. You do not have admin privileges.');
-                            // ** PATH CORRECTION FOR GITHUB PAGES **
-                            // This path assumes login.html is in the root, one level above /Dashboard/
+                            console.log("DEBUG: FAILURE. User node does not exist in the database for UID:", user.uid);
+                            alert('Access Denied. User profile not found.');
                             window.location.href = '../login.html';
                         }
                     }).catch((error) => {
-                        console.error("Error verifying user role:", error);
-                        alert('An error occurred while verifying your role.');
+                        console.error("DEBUG: CRITICAL ERROR fetching user role. CHECK FIREBASE RULES.", error);
+                        alert('An error occurred while verifying your role. This is often a database rules issue.');
                         window.location.href = '../login.html';
                     });
                 } else {
+                    console.log("DEBUG: Auth state changed. User is LOGGED OUT. Redirecting to login.");
                     window.location.href = '../login.html';
                 }
             });
@@ -577,9 +592,12 @@
                 document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
                 document.getElementById('refresh-btn').addEventListener('click', refreshDashboard);
 
+                console.log("DEBUG: initDashboard() called. Setting up database listener for /buildings.");
                 onValue(ref(database, '/buildings'), (snapshot) => {
+                    console.log("DEBUG: Received data from /buildings listener.");
                     const data = snapshot.val();
                     fullBuildingsData = data ? Object.keys(data).map(key => ({ ...data[key], db_key: key })) : [];
+                    console.log(`DEBUG: Processed ${fullBuildingsData.length} building records.`);
                     
                     processCityData();
                     populateFilters();
@@ -588,6 +606,9 @@
                     loadingSpinner.style.display = 'none';
                     dashboardContainer.style.display = 'block';
                     updateLastUpdateTime();
+                }, (error) => {
+                    console.error("DEBUG: CRITICAL ERROR reading from /buildings. CHECK FIREBASE RULES.", error);
+                    alert("Failed to load building data. Please check your database permissions.");
                 });
             }
 
@@ -602,6 +623,7 @@
             }
             
             function renderDashboard(data) {
+                console.log("DEBUG: Rendering dashboard with", data.length, "records.");
                 updateOverallStats(data);
                 updateCharts(data);
                 updateGovernorateCards(data);
